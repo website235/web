@@ -1,11 +1,578 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>smart math teatcher</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>منصة دروس الرياضيات</title>
+  
+  <style>
+    :root {
+      --blue: #1e6ed8; 
+      --yellow: #f2b400; 
+      --card: #fff; 
+      --muted: #9aa6b2; 
+      --light-bg: #eef3fa; 
+      --option-bg: #f7f9fc;
+    }
+    
+    * {
+      box-sizing: border-box;
+      /* استخدام خطوط بسيطة وواضحة */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    }
+    
+    body {
+      margin: 0;
+      background: var(--light-bg);
+      color: #083243;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 0;
+    }
+    
+    .app {
+      width: 100%;
+      max-width: 420px; 
+      background: var(--card); 
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Global Card Style */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(2,36,84,0.06);
+      padding: 16px;
+      margin: 16px;
+    }
+
+    /* Header Styling */
+    header {
+      padding: 16px;
+      padding-bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .header-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+      flex-grow: 1;
+    }
+
+    .back {
+      color: var(--blue);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      display: none; 
+    }
+
+    /* Lesson List & Detail Views */
+    .lesson-list, .lesson-detail {
+      flex-grow: 1;
+      padding: 0 16px 80px 16px;
+    }
+
+    .lesson-item {
+      background: var(--card);
+      border: 1px solid #e6eef8;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .lesson-item:hover {
+      background: #f7f9fc;
+    }
+    
+    /* --- Whiteboard Style for Lesson Content --- */
+    .whiteboard {
+        margin-bottom: 20px;
+        padding: 20px; 
+        border-radius: 6px; 
+        background: #ffffff; /* خلفية بيضاء نقية للسبورة */
+        border: 2px solid #e0e0e0; /* حافة بسيطة */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .lesson-title {
+        font-weight: bold;
+        font-size: 20px;
+        color: var(--blue);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    /* تنسيق عناوين الأقسام مثل لوحة الشرح */
+    .lesson-section-board {
+        color: #000; /* لون العنوان */
+        font-weight: 900; 
+        font-size: 17px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        border-bottom: 3px solid var(--blue); /* خط فاصل أزرق */
+        padding-bottom: 5px;
+        text-align: right;
+    }
+    
+    /* تنسيق النص ليكون بارزاً وواضحاً كالكتابة على سبورة */
+    .board-text {
+        padding: 10px 0;
+        line-height: 1.8;
+        font-size: 16px;
+        font-weight: 600; /* جعل النصوص أكثر وضوحاً */
+        color: #1a1a1a;
+        white-space: pre-wrap; /* للحفاظ على تنسيق الأسطر إذا أردت */
+    }
+    
+    .example-text {
+        /* النص يكون بنفس تنسيق السبورة board-text */
+        font-weight: bold; 
+        font-style: normal;
+        color: #083243;
+    }
+    /* --- نهاية تنسيق السبورة --- */
+
+    /* Buttons */
+    .start-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 0;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    
+    /* Quiz Styling remains similar to the image you provided */
+    .quiz-wrap { margin-top: 12px; }
+    .question { font-size: 18px; margin-bottom: 12px; font-weight: 600; }
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option {
+      background: var(--option-bg);
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .option.selected { 
+      background: #e6f0ff; 
+      border-color: var(--blue);
+    }
+    .option.correct {
+      background: #e6fbef;
+      border-color: #8de2a8;
+      font-weight: bold;
+    }
+    .option.wrong {
+      background: #ffecec;
+      border-color: #ff9a9a;
+      font-weight: bold;
+    }
+    
+    /* Quiz Controls and Progress */
+    .bottom {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #eee;
+      padding-top: 14px;
+    }
+    .progress { flex: 1; height: 10px; background: #f0f3f6; border-radius: 8px; overflow: hidden; }
+    .progress > i { display: block; height: 100%; background: var(--yellow); width: 0%; transition: width 0.3s ease-out; }
+    .small { padding: 8px 10px; border-radius: 6px; border: 0; background: #f3f6fb; color: #083243; font-weight: 600; cursor: pointer; }
+    #nextBtn { background: var(--blue); color: white; }
+
+    /* Footer Tabs */
+    .footer-tabs {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      height: 60px;
+      background: var(--card);
+      border-top: 1px solid #e6eef8;
+      z-index: 10;
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab.active {
+      background: var(--yellow);
+      color: #083243;
+      font-weight: 700;
+    }
+    .tab:first-child i::before { content: '📱'; }
+    .tab:last-child i::before { content: '❓'; }
+
+  </style>
 </head>
-<body style="font-family: sans-serif; text-align:center; padding:50px;">
-  <h1>مرحباً بالعالم!</h1>
-  <p>هذا موقعي من GitHub Pages 🎉</p>
+<body>
+  <div class="app">
+    <header>
+      <div class="back" onclick="showLessons()">←</div>
+      <h1 class="header-title" id="mainTitle">الدروس</h1>
+    </header>
+    
+    <section class="lesson-list" id="lessonListView">
+      <p style="color:var(--muted); font-size:14px; margin-top:0;">اختر درسًا من مقررات الفصل الأول للصف الثامن</p>
+      </section>
+
+    <section class="lesson-detail" id="lessonDetailView">
+      <div class="card lesson-card">
+        <div class="whiteboard">
+          <div class="lesson-title" id="lessonName"></div>
+          
+          <div class="lesson-section-board">شرح مختصر.</div>
+          <p class="board-text" id="lessonSummary"></p>
+          
+          <div class="lesson-section-board">مثال محلول.</div>
+          <div class="board-text example-text" id="lessonExample"></div>
+          
+          <div class="lesson-section-board">جرّب بنفسك.</div>
+          <div class="board-text example-text" id="lessonPractice"></div>
+        </div>
+
+        <button class="start-btn" id="startBtn">ابدأ الاختبار</button>
+
+        <div class="quiz-wrap" id="quizWrap" style="display:none">
+          <div class="card" id="qcard">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+              السؤال <span id="qnum">1</span> من <span id="qtotal">5</span>
+            </div>
+
+            <div class="question" id="questionText"></div>
+            <div class="options" id="options"></div>
+
+            <div class="bottom">
+              <div style="width:70px;text-align:center">النتيجة: <strong id="score">0</strong></div>
+              <div class="progress"><i id="progBar"></i></div>
+              <div class="controls">
+                <button class="small" id="nextBtn">التالي</button>
+                <button class="small" id="resetBtn">إعادة الاختبار</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lesson-detail" id="assistantView" style="padding-top: 16px;">
+        <div class="card">
+            <h2 style="font-size:20px; font-weight:bold; margin-top:0; color:var(--blue);">المساعد الذكي للرياضيات</h2>
+            <p style="font-size:14px; color:#555;">اكتب سؤالك في الرياضيات هنا وسيجيبك النظام الذكي فورًا!</p>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <input type="text" placeholder="...أدخل سؤالك" style="flex:1; padding:12px; border-radius:8px; border:1px solid #e6eef8; font-size:16px;" />
+                <button style="padding:12px 20px; border-radius:8px; border:0; background:var(--blue); color:#fff; font-weight:bold; cursor:pointer;">إرسال</button>
+            </div>
+            <p style="margin-top:20px; text-align:center; color:var(--blue); font-weight:600; font-size:14px;">هنا ستظهر إجابة المساعد الذكي أو الشرح المختصر بعد إرسال السؤال.</p>
+        </div>
+    </section>
+
+    <div class="footer-tabs">
+      <div class="tab active" data-target="lessonListView" id="lessonsTab">
+        <i></i>
+        <span>الدروس</span>
+      </div>
+      <div class="tab" data-target="assistantView" id="assistantTab">
+        <i></i>
+        <span>المساعد الذكي</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Lesson Data Bank ---
+    const LESSONS = [
+      {
+        id: 'roots',
+        name: 'الجذور التربيعية',
+        summary: 'الجذر التربيعي للعدد الموجب هو عدد غير سالب، عند ضربه بنفسه يعطي العدد الأصلي. وهي عملية عكسية للتربيع.',
+        example: '$\\sqrt{25} = 5$ لأن $5 \\times 5 = 25$.\n$\\sqrt{16} = 4$ لأن $4 \\times 4 = 16$.',
+        practice: 'جذر 81 يساوي؟',
+        quiz: [
+          { q: 'كم يساوي الجذر التربيعي لـ 16؟', choices: ['2', '3', '4', '5'], answer: 2 },
+          { q: 'ما هو العدد الذي جذره التربيعي يساوي 8؟', choices: ['16', '64', '32', '8'], answer: 1 },
+          { q: 'الجذر التربيعي لـ 100 هو؟', choices: ['50', '25', '10', '5'], answer: 2 },
+          { q: 'احسب $\\sqrt{4}$؟', choices: ['1', '2', '4', '16'], answer: 1 },
+        ]
+      },
+      {
+        id: 'irrational',
+        name: 'جذور صماء',
+        summary: 'هي الجذور التي لا يمكن التعبير عنها ككسر (عدد نسبي)، أي تكون أعدادًا غير منتهية وغير دورية.',
+        example: 'العدد $\\sqrt{2}$ هو جذر أصم، وقيمته التقريبية هي 1.4142...، ولا يمكن كتابته ككسر.',
+        practice: 'هل $\\sqrt{9}$ جذر أصم؟ ولماذا؟',
+        quiz: [
+          { q: 'أي من الأعداد التالية هو جذر أصم؟', choices: ['$\\sqrt{4}$', '$\\sqrt{9}$', '$\\sqrt{3}$', '$\\sqrt{16}$'], answer: 2 },
+          { q: 'الجذر الأصم هو عدد:', choices: ['دوري', 'ينتهي', 'غير نسبي', 'نسبي'], answer: 2 },
+        ]
+      },
+      { 
+        id: 'pythagoras', 
+        name: 'نظرية فيثاغورس', 
+        summary: 'في المثلث القائم الزاوية، مربع طول الوتر يساوي مجموع مربعي طولي الضلعين الآخرين. القانون هو: $a^2 + b^2 = c^2$.', 
+        example: 'مثلث قائم طول ضلعيه القائمين 3 و 4. طول الوتر $c$ هو:\\n$c^2 = 3^2 + 4^2$\n$c^2 = 9 + 16 = 25$\n$c = \\sqrt{25} = 5$.', 
+        practice: 'مثلث قائم طول أحد ضلعيه 5 ووتره 13. كم طول الضلع الآخر؟', 
+        quiz: [{ q: 'الضلع الأطول في المثلث القائم يسمى؟', choices: ['وتر', 'قاعدة', 'ارتفاع', 'ضلع'], answer: 0 }] 
+      },
+      { id: 'real', name: 'الأعداد الحقيقية', summary: 'هي مجموعة تضم جميع الأعداد النسبية (الكسور، والأعداد الصحيحة) والأعداد غير النسبية (الجذور الصماء).', example: 'تشمل: $-3$, $0.5$, $\\sqrt{2}$, $\\frac{1}{3}$.', practice: 'صنّف العدد 7 إلى نسبي أو غير نسبي.', quiz: [{ q: 'أي من الأعداد التالية ليس حقيقيًا؟', choices: ['$\\sqrt{4}$', '$-1$', '$\\sqrt{-1}$', '$\\pi$'], answer: 2 }] },
+      { 
+        id: 'exp_roots', 
+        name: 'الأسس النسبية والجذور', 
+        summary: 'الأس النسبي هو طريقة أخرى لكتابة الجذور: $x^{m/n} = \\sqrt[n]{x^m}$. قانون قوة القوة هو $\\left(A^n\\right)^m = A^{n \\times m}$.', 
+        example: 'لإيجاد قيمة $\\left(2^3\\right)^4$: نضرب الأسس $3 \\times 4 = 12$. \nفتكون $2^{12} = 4096$.', 
+        practice: 'اكتب $5^{3/2}$ بصيغة جذر.', 
+        quiz: [{ q: 'ماذا تعني $x^{1/2}$؟', choices: ['ضعف x', 'نصف x', 'الجذر التربيعي لـ x', 'مربع x'], answer: 2 }] 
+      },
+      { 
+        id: 'exp_mult_div', 
+        name: 'ضرب الأسس النسبية وقسمتها', 
+        summary: 'قاعدة الضرب: عند ضرب قوى لها نفس الأساس، نجمع الأسس ($A^n \\cdot A^m = A^{n+m}$). \\nقاعدة القسمة: عند القسمة، نطرح الأسس ($\\frac{A^n}{A^m} = A^{n-m}$).', 
+        example: 'مثال القسمة (من صورك): $\\frac{7^6}{7^3} = 7^{6-3} = 7^3 = 343$.\nمثال الضرب: $5^2 \\cdot 5^4 = 5^{2+4} = 5^6 = 15625$.', 
+        practice: 'احسب $\\frac{3^5}{3^2}$ وضعها في صورة أس واحد.', 
+        quiz: [
+            { q: '$5^{1/3} \\cdot 5^{2/3}$ يساوي؟', choices: ['5', '25', '1', '1/5'], answer: 0 },
+            { q: 'ناتج $\\frac{2^8}{2^3}$ هو؟', choices: ['2$^{11}$', '2$^{5}$', '2$^{8/3}$', '2$^3$'], answer: 1 },
+        ] 
+      },
+      { id: 'scientific', name: 'الصيغة العلمية', summary: 'كتابة الأعداد الكبيرة جدًا أو الصغيرة جدًا على شكل $a \\times 10^n$ حيث $1 \\le |a| < 10$ و $n$ عدد صحيح.', example: 'العدد 300,000 يكتب: $3 \\times 10^5$.', practice: 'اكتب 0.0000075 بالصيغة العلمية.', quiz: [{ q: 'الصيغة العلمية للعدد 45000 هي؟', choices: ['4.5 $\\times$ 10$^{4}$', '45 $\\times$ 10$^{3}$', '0.45 $\\times$ 10$^{5}$', '450 $\\times$ 10$^{2}$'], answer: 0 }] },
+      { id: 'percentage', name: 'النسبة المئوية', summary: 'طريقة للتعبير عن عدد ككسر من 100، ويرمز لها بالرمز (%).', example: '$25\\%$ تعني 25 من 100، أي $\\frac{1}{4}$.', practice: 'كم تساوي $15\\%$ من 200؟', quiz: [{ q: 'ما هو الكسر العادي الذي يمثل $20\\%$؟', choices: ['$\\frac{1}{5}$', '$\\frac{1}{20}$', '$\\frac{2}{5}$', '$\\frac{1}{4}$'], answer: 0 }] }
+    ];
+
+    // --- DOM Elements ---
+    const lessonListView = document.getElementById('lessonListView');
+    const lessonDetailView = document.getElementById('lessonDetailView');
+    const assistantView = document.getElementById('assistantView');
+    const mainTitle = document.getElementById('mainTitle');
+    const backBtn = document.querySelector('.back');
+    const tabs = document.querySelectorAll('.tab');
+    
+    // Lesson Detail Elements
+    const lessonNameEl = document.getElementById('lessonName');
+    const lessonSummaryEl = document.getElementById('lessonSummary');
+    const lessonExampleEl = document.getElementById('lessonExample');
+    const lessonPracticeEl = document.getElementById('lessonPractice');
+    const startBtn = document.getElementById('startBtn');
+    
+    // Quiz Elements
+    const quizWrap = document.getElementById('quizWrap');
+    const qnum = document.getElementById('qnum');
+    const qtotal = document.getElementById('qtotal');
+    const questionText = document.getElementById('questionText');
+    const optionsEl = document.getElementById('options');
+    const scoreEl = document.getElementById('score');
+    const progBar = document.getElementById('progBar');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let currentLesson = null;
+    let quizState = { idx: 0, score: 0, order: [], answered: false };
+
+    // --- Utility Functions ---
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    // --- View/Navigation Functions ---
+    function setActiveTab(targetId) {
+        // Hide all main views
+        lessonListView.style.display = 'none';
+        lessonDetailView.style.display = 'none';
+        assistantView.style.display = 'none';
+
+        // Show the target view
+        document.getElementById(targetId).style.display = 'flex';
+        
+        // Handle header and back button
+        const isLessonDetail = targetId === 'lessonDetailView';
+        const isAssistant = targetId === 'assistantView';
+        
+        backBtn.style.display = isLessonDetail ? 'block' : 'none';
+        if (isLessonDetail) {
+            mainTitle.textContent = currentLesson ? 'اختبار الدرس' : 'الدرس'; // Updated title for detail view
+        } else if (isAssistant) {
+            mainTitle.textContent = 'المساعد الذكي';
+        } else {
+            mainTitle.textContent = 'الدروس';
+        }
+
+        // Handle tab active state
+        tabs.forEach(t => t.classList.remove('active'));
+        document.querySelector(`.tab[data-target="${targetId}"]`).classList.add('active');
+    }
+
+    function showLessons() {
+        currentLesson = null;
+        quizWrap.style.display = 'none'; 
+        startBtn.style.display = 'block'; 
+        setActiveTab('lessonListView');
+    }
+
+    function showLessonDetail(lessonId) {
+        currentLesson = LESSONS.find(l => l.id === lessonId);
+        if (!currentLesson) return;
+
+        // Populate lesson info
+        lessonNameEl.textContent = currentLesson.name;
+        // Use innerHTML for math expressions and replace newline characters with <br> for better board look
+        lessonSummaryEl.innerHTML = currentLesson.summary.replace(/\n/g, '<br>');
+        lessonExampleEl.innerHTML = currentLesson.example.replace(/\n/g, '<br>');
+        lessonPracticeEl.innerHTML = currentLesson.practice.replace(/\n/g, '<br>');
+        
+        // Switch view
+        setActiveTab('lessonDetailView');
+    }
+
+    // --- Quiz Functions ---
+    function prepareQuiz(lesson) {
+      if (!lesson || !lesson.quiz) return;
+      
+      let pool = lesson.quiz.slice();
+      shuffle(pool); 
+      quizState.order = pool.slice(0, 5); 
+      quizState.idx = 0;
+      quizState.score = 0;
+      quizState.answered = false;
+      
+      qtotal.textContent = quizState.order.length;
+      scoreEl.textContent = quizState.score;
+      quizWrap.style.display = 'block';
+      startBtn.style.display = 'none';
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      const item = quizState.order[quizState.idx];
+      qnum.textContent = quizState.idx + 1;
+      questionText.innerHTML = item.q; 
+      optionsEl.innerHTML = "";
+
+      item.choices.forEach((c, i) => {
+        const b = document.createElement("div");
+        b.className = "option";
+        b.innerHTML = c;
+        b.onclick = () => selectOption(i);
+        optionsEl.appendChild(b);
+      });
+
+      // Update progress bar
+      progBar.style.width = ((quizState.idx) / quizState.order.length) * 100 + "%";
+      nextBtn.disabled = !quizState.answered;
+    }
+
+    function selectOption(i) {
+      if (quizState.answered) return;
+      quizState.answered = true;
+
+      const correct = quizState.order[quizState.idx].answer;
+      const opts = document.querySelectorAll("#options .option");
+
+      // Mark selected option
+      opts[i].classList.add("selected");
+      
+      // Highlight correct/wrong
+      opts[i].classList.add(i === correct ? "correct" : "wrong");
+      if (i !== correct) {
+        opts[correct].classList.add("correct");
+      }
+
+      if (i === correct) quizState.score++;
+      scoreEl.textContent = quizState.score;
+      nextBtn.disabled = false;
+    }
+
+    // --- Event Listeners ---
+    function initLessonList() {
+      lessonListView.innerHTML = LESSONS.map(l => 
+        `<div class="lesson-item" data-id="${l.id}">${l.name}</div>`
+      ).join('');
+
+      document.querySelectorAll('.lesson-item').forEach(item => {
+        item.onclick = () => showLessonDetail(item.getAttribute('data-id'));
+      });
+    }
+
+    startBtn.onclick = () => {
+        if(currentLesson) {
+            prepareQuiz(currentLesson);
+        }
+    };
+    
+    nextBtn.onclick = () => {
+      if (quizState.answered && quizState.idx < quizState.order.length - 1) {
+        quizState.idx++;
+        quizState.answered = false;
+        renderQuiz();
+      } else if (quizState.answered && quizState.idx === quizState.order.length - 1) {
+        alert(`انتهى الاختبار! نتيجتك هي: ${quizState.score} من ${quizState.order.length}`);
+        quizWrap.style.display = 'none';
+        startBtn.style.display = 'block';
+        progBar.style.width = '100%';
+      }
+    };
+    
+    resetBtn.onclick = () => {
+      if (currentLesson) {
+        prepareQuiz(currentLesson);
+      }
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-target');
+            setActiveTab(target);
+        });
+    });
+
+    // --- Initialization ---
+    initLessonList();
+    showLessons(); 
+  </script>
+
 </body>
 </html>
+
+
+<div class="app">
+    </div>
+
+  <script>
+    // جميع أكواد JavaScript الخاصة بالدروس والوظائف هنا!
+    const LESSONS = [
+      // ...
+    ];
+    // ...
+  </script>
+
+</body>
+</html>
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1" />
