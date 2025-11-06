@@ -1,1 +1,39 @@
+/* ... أكواد CSS السابقة ... */
 
+body {
+    margin: 0;
+    background: var(--light-bg); /* لون الخلفية حول التطبيق */
+    color: #083243;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+}
+
+.app {
+    width: 100%;
+    /* تقييد أقصى عرض للتطبيق ليبقى بحجم الجوال */
+    max-width: 420px; 
+    background: var(--card); 
+    min-height: 100vh; /* ليغطي شاشة الجوال بالكامل */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ⚠️ إضافة قاعدة لمنع العرض المريح على الكمبيوتر (اختياري لكنه فعال) */
+@media (min-width: 421px) {
+    /* على الشاشات الأكبر من 420px، اجعل الخلفية المحيطة داكنة أو غير جذابة */
+    body {
+        background-color: #ccc; 
+    }
+    
+    .app {
+        /* إجبار التطبيق على أخذ عرض ثابت وصغير حتى على شاشة الكمبيوتر */
+        border: 1px solid #999; 
+        box-shadow: 0 0 20px rgba(0,0,0,0.2); 
+        margin-top: 20px; 
+        margin-bottom: 20px;
+        min-height: auto; /* لا يحتاج لتغطية الشاشة بالكامل على سطح المكتب */
+    }
+    /* يمكنك هنا أيضاً إضافة رسالة "يرجى استخدام الهاتف" */
+}
